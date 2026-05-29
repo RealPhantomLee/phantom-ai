@@ -1,0 +1,36 @@
+[Unit]
+Description=Phantom AI Voice Pipeline
+Documentation=man:phantom-ai(1)
+After=network.target
+Wants=phantom-ai-gimbal.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/phantom-ai
+EnvironmentFile=/etc/phantom-ai/voice.env
+ExecStart=/usr/bin/python3 -m phantom_ai.voice.service
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=phantom-ai-voice
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/dev/snd /run/user/%i
+
+# Audio access
+SupplementalGroups=audio
+
+# Restart policy
+Restart=on-failure
+RestartSec=10
+StartLimitInterval=60s
+StartLimitBurst=3
+
+[Install]
+WantedBy=multi-user.target

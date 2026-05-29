@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: gpu-detection
+  namespace: phantom-ai
+spec:
+  template:
+    spec:
+      serviceAccountName: default
+      hostNetwork: true
+      hostPID: true
+      containers:
+      - name: gpu-detection
+        image: nvidia/cuda:12.4.1-base-ubuntu22.04
+        command:
+          - /bin/bash
+          - -c
+          - |
+            echo "=== GPU Detection on Core Node ===" > /tmp/gpu-info.txt
+            nvidia-smi --query-gpu=name,memory.total --format=csv,noheader >> /tmp/gpu-info.txt 2>&1
+            nvidia-smi --query-gpu=compute_cap --format=csv,noheader >> /tmp/gpu-info.txt 2>&1
+            cat /tmp/gpu-info.txt
+            # Keep pod alive so logs can be read
+            tail -f /dev/null
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: host-root
+          mountPath: /host
+        - name: nvidia-install-dir
+          mountPath: /usr/local/nvidia
+      volumes:
+      - name: host-root
+        hostPath:
+          path: /
+      - name: nvidia-install-dir
+        hostPath:
+          path: /usr/local/nvidia
+      nodeSelector:
+        kubernetes.io/hostname: core
+      restartPolicy: Never
+  backoffLimit: 1

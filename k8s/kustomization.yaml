@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: phantom-ai
+
+commonLabels:
+  app: phantom-ai
+  managed-by: argocd
+
+resources:
+  - namespace.yaml
+  - ollama-deployment.yaml
+  - redis-deployment.yaml
+  - chromadb-deployment.yaml
+  - nvidia-device-plugin.yaml
+
+# Values can be overridden per environment
+configMapGenerator: []
+secretGenerator: []
