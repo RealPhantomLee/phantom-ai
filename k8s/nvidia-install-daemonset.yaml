@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nvidia-install-ds
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: nvidia-install
+  template:
+    metadata:
+      labels:
+        app: nvidia-install
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: core
+      hostNetwork: true
+      hostPID: true
+      hostIPC: true
+      containers:
+      - name: nvidia-installer
+        image: archlinux:latest
+        command:
+          - /bin/bash
+          - -c
+          - |
+            #!/bin/bash
+            set -e
+            echo "=== NVIDIA Driver Installation on Core ==="
+
+            # Check if already installed
+            if pacman -Q nvidia &>/dev/null; then
+              echo "✅ NVIDIA drivers already installed"
+              nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
+              tail -f /dev/null
+            else
+              echo "📦 Installing NVIDIA drivers and container toolkit..."
+              pacman -Syu --noconfirm
+              pacman -S --noconfirm nvidia nvidia-utils nvidia-container-toolkit
+
+              echo "✅ Installation complete"
+              nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
+
+              echo "🔄 Restarting containerd..."
+              systemctl restart containerd
+
+              echo "✅ Done"
+              tail -f /dev/null
+            fi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: host-root
+          mountPath: /host
+        - name: sys
+          mountPath: /sys
+        - name: dev
+          mountPath: /dev
+      volumes:
+      - name: host-root
+        hostPath:
+          path: /
+      - name: sys
+        hostPath:
+          path: /sys
+      - name: dev
+        hostPath:
+          path: /dev
