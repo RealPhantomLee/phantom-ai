@@ -53,6 +53,9 @@ class Settings(BaseSettings):
     redis_url: str = "redis://redis.phantom-ai.svc:6379"
     redis_db: int = 0
 
+    # API security
+    api_key: str = ""
+
     # Logging
     log_level: str = "INFO"
     debug: bool = False

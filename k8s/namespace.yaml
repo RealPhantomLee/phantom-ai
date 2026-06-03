@@ -5,3 +5,5 @@ metadata:
   labels:
     app.kubernetes.io/name: phantom-ai
     managed-by: argocd
+    pod-security.kubernetes.io/warn: baseline
+    pod-security.kubernetes.io/audit: baseline

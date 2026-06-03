@@ -33,7 +33,7 @@ spec:
         kubernetes.io/hostname: core
       containers:
       - name: ollama
-        image: ollama/ollama:latest
+        image: ollama/ollama:0.3.12
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 11434

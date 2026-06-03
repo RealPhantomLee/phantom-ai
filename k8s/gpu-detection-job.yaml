@@ -6,9 +6,7 @@ metadata:
 spec:
   template:
     spec:
-      serviceAccountName: default
-      hostNetwork: true
-      hostPID: true
+      serviceAccountName: phantom-ai-agent
       containers:
       - name: gpu-detection
         image: nvidia/cuda:12.4.1-base-ubuntu22.04
@@ -22,20 +20,13 @@ spec:
             cat /tmp/gpu-info.txt
             # Keep pod alive so logs can be read
             tail -f /dev/null
+        resources:
+          limits:
+            nvidia.com/gpu: "1"
         securityContext:
-          privileged: true
-        volumeMounts:
-        - name: host-root
-          mountPath: /host
-        - name: nvidia-install-dir
-          mountPath: /usr/local/nvidia
-      volumes:
-      - name: host-root
-        hostPath:
-          path: /
-      - name: nvidia-install-dir
-        hostPath:
-          path: /usr/local/nvidia
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
       nodeSelector:
         kubernetes.io/hostname: core
       restartPolicy: Never

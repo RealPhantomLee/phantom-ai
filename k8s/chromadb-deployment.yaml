@@ -33,7 +33,7 @@ spec:
         kubernetes.io/hostname: core
       containers:
       - name: chromadb
-        image: ghcr.io/chroma-core/chroma:latest
+        image: ghcr.io/chroma-core/chroma:0.5.0
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8000
@@ -51,7 +51,7 @@ spec:
         - name: PERSIST_DIRECTORY
           value: /chroma-data
         - name: ALLOW_RESET
-          value: "true"
+          value: "false"
         volumeMounts:
         - name: chromadb-data
           mountPath: /chroma-data

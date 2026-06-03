@@ -19,7 +19,9 @@ spec:
       hostIPC: true
       containers:
       - name: nvidia-installer
-        image: archlinux:latest
+        # BOOTSTRAP ONLY — delete this DaemonSet after driver installation completes:
+        # kubectl delete ds nvidia-install-ds -n kube-system
+        image: archlinux:20240601
         command:
           - /bin/bash
           - -c

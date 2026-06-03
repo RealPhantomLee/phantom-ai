@@ -9,6 +9,8 @@ commonLabels:
 
 resources:
   - namespace.yaml
+  - rbac.yaml
+  - network-policy.yaml
   - ollama-deployment.yaml
   - redis-deployment.yaml
   - chromadb-deployment.yaml
