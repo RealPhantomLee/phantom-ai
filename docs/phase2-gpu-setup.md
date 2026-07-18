@@ -2,14 +2,14 @@
 
 ## Step 1: Install NVIDIA Drivers and Container Toolkit on Core
 
-This must be done on the `core` node (REDACTED_CORE_IP) before Ollama can access the GPU.
+This must be done on the `core` node (<CORE_TAILSCALE_IP>) before Ollama can access the GPU.
 
 ### SSH to Core
 
 ```bash
-tailscale ssh REDACTED_CORE_IP
+tailscale ssh <CORE_TAILSCALE_IP>
 # or
-ssh -i ~/.ssh/id_ed25519 user@REDACTED_CORE_IP
+ssh -i ~/.ssh/id_ed25519 user@<CORE_TAILSCALE_IP>
 ```
 
 ### Identify GPU

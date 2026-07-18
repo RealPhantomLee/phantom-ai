@@ -4,13 +4,13 @@
 
 ## Quick Start
 
-Copy and paste these commands into a terminal on **core** (REDACTED_CORE_IP):
+Copy and paste these commands into a terminal on **core** (<CORE_TAILSCALE_IP>):
 
 ```bash
 # SSH from blacknode (if needed)
 tailscale ssh roger@core
 # or
-ssh user@REDACTED_CORE_IP
+ssh user@core  # or ssh user@<CORE_TAILSCALE_IP>
 
 # Download and run installation script
 curl -fsSL https://raw.githubusercontent.com/RealPhantomLee/phantom-ai/main/install-nvidia.sh | bash
@@ -40,10 +40,10 @@ From **blacknode** (your control plane machine):
 
 ```bash
 # Option A: Tailscale SSH
-tailscale ssh REDACTED_CORE_IP
+tailscale ssh roger@core
 
 # Option B: Standard SSH
-ssh user@REDACTED_CORE_IP
+ssh user@core  # or ssh user@<CORE_TAILSCALE_IP>
 ```
 
 ### Step 2: Install NVIDIA Drivers

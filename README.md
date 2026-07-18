@@ -4,7 +4,7 @@ An autonomous AI system managing a k3s Kubernetes homelab cluster with voice, vi
 
 ## Overview
 
-`phantom-ai` is a specialized AI agent running on the `core` node (REDACTED_CORE_IP on Tailscale) with:
+`phantom-ai` is a specialized AI agent running on the `core` node (<CORE_TAILSCALE_IP> on Tailscale) with:
 - **GPU-accelerated LLM inference** via Ollama (NVIDIA GPU)
 - **Voice interface** (Blue Yeti mic + Piper TTS)
 - **Vision processing** (Panasonic Lumix G7 via Cam Link 4K + Hailo AI Hat+ on aipi)
@@ -15,7 +15,7 @@ An autonomous AI system managing a k3s Kubernetes homelab cluster with voice, vi
 
 ## Hardware
 
-### `core` (REDACTED_CORE_IP, Arch Linux, 12c/32GB)
+### `core` (<CORE_TAILSCALE_IP>, Arch Linux, 12c/32GB)
 - **GPU**: NVIDIA (run `nvidia-smi` to identify VRAM tier at deploy time)
 - **Camera**: Panasonic Lumix G7 → Cam Link 4K → `/dev/video0`
 - **Microphone**: Blue Yeti (USB)
@@ -29,7 +29,7 @@ An autonomous AI system managing a k3s Kubernetes homelab cluster with voice, vi
 
 ```
 ┌─────────────────────────────────────────────────┐
-│ core (REDACTED_CORE_IP) — phantom-ai orchestrator  │
+│ core (<CORE_TAILSCALE_IP>) — phantom-ai orchestrator  │
 │                                                 │
 │ Blue Yeti ──→ openwakeword ──→ faster-whisper  │
 │               (CPU)              (GPU)          │
