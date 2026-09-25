@@ -1,0 +1,269 @@
+# Folder profiles for the phantom-ai orchestrator (DRAFT, from the 2026-09-25 host audit).
+# Paths are gitignore-style globs relative to each host's $HOME.
+# Resolution: global sensitive rules win -> first matching host profile -> host default -> global default.
+# Fields: purpose | index: yes/no/limited | scan: nightly/hourly/none | toolset: incident/files/projects/none
+#         sensitive: true = never index, never read contents (stat/size/mtime only).
+version: 0.1-draft
+
+defaults:
+  purpose: unclassified
+  index: "no"
+  scan: none
+  toolset: none
+  sensitive: false
+
+# Applied on every host before any profile. Never indexed, never read.
+sensitive_always:
+  - "**/.env"
+  - "**/.env.*"
+  - "!**/.env.example"
+  - "**/.ssh/**"
+  - "**/.gnupg/**"
+  - "**/.password-store/**"
+  - "**/.kube/**"
+  - "**/kubeconfig*"
+  - "**/*.pem"
+  - "**/*.key"
+  - "**/*credential*"
+  - "**/*secret*"
+  - "**/.cloudflared/**"
+  - "**/.mozilla/**"
+  - "**/.config/BraveSoftware/**"
+  - "**/.config/chromium/**"
+  - "**/.config/google-chrome/**"
+  - "**/.config/Claude/**"
+  - "**/.claude/**"
+  - "**/.codex/**"
+
+# Never scanned anywhere (noise / vendored / caches).
+exclude_always:
+  - "**/node_modules/**"
+  - "**/.venv/**"
+  - "**/venv/**"
+  - "**/__pycache__/**"
+  - "**/.cache/**"
+  - "**/.git/**"
+  - "**/.next/**"
+  - "**/dist/**"
+  - "**/build/**"
+
+hosts:
+  core:
+    default: { purpose: unclassified, index: "no", scan: none, toolset: none, sensitive: false }
+    profiles:
+      - name: projects
+        paths: ["Projects/*/"]
+        exceptions: ["Projects/aaip/lib/**"]   # contains a live .env sibling; code only via git metadata
+        purpose: active code repos (dirty/stale/no-remote tracking)
+        index: limited          # git metadata + README/CLAUDE.md/BUILD_STATE.md only
+        scan: nightly
+        toolset: projects
+        sensitive: false
+      - name: reports
+        paths: ["reports/**"]
+        purpose: agent and automation outputs (what-changed, audits, ecosystem reviews)
+        index: "yes"
+        scan: nightly
+        toolset: incident
+        sensitive: false
+      - name: handoffs
+        paths: ["handoffs/**", "Documents/handoffs/**", "HANDOFF_*.md", "*.md"]
+        purpose: session handoffs and loose notes in home root
+        index: "yes"
+        scan: nightly
+        toolset: projects
+        sensitive: false
+      - name: home-root-intake
+        paths: ["*.mp4", "*.cap", "*.csv", "*.netxml", "*.sh"]
+        purpose: loose files in $HOME (acts as the Downloads intake on core)
+        index: "no"             # stat only: name, size, age
+        scan: nightly
+        toolset: files
+        sensitive: false
+      - name: obsidian-vault
+        paths: ["Documents/Obsidian Vault/**"]
+        exceptions: ["Documents/Obsidian Vault/.obsidian/**"]
+        purpose: operations notes (SOPs, briefs); git-synced daily
+        index: limited          # TODO: ask owner - may the orchestrator read note contents, or stats/titles only?
+        scan: nightly
+        toolset: files
+        sensitive: false
+      - name: life-os-state
+        paths: [".local/state/life-os/**", ".local/share/life-os/**"]
+        purpose: life-os app data + flight-recorder staging (recursive nesting bug, 7 levels)
+        index: "no"
+        scan: nightly           # size/depth only, to catch the fr-staging recursion growing
+        toolset: incident
+        sensitive: true
+      - name: kageki-data
+        paths: [".local/share/kageki/**", "kageki-discord-mod/data/**"]
+        purpose: Kageki memory DB and Discord relay outbox
+        index: "no"
+        scan: none
+        toolset: none
+        sensitive: true
+      - name: security-tooling
+        paths: ["BurpSuite/**", "captures/**", "OFH-01.*", "sandbox/**", "wazuh*/**"]
+        purpose: pentest captures, sandboxes, SIEM data
+        index: "no"
+        scan: none
+        toolset: none
+        sensitive: true
+      - name: games-media
+        paths: ["Games/**", ".local/share/Steam/**", "Pictures/**", "Music/**", "Videos/**"]
+        purpose: games and personal media
+        index: "no"
+        scan: none
+        toolset: none
+        sensitive: false
+      - name: decommissioned
+        paths: ["aipi/**", "vault-backups/**", "archive-*/**", "backups/**", "migrations/**"]
+        purpose: leftovers from aipi decommission and migrations (archive candidates)
+        index: "no"
+        scan: nightly           # size/age only, to surface cleanup
+        toolset: files
+        sensitive: false
+      - name: tooling
+        paths: ["dev-tools/**", "graphify-out/**", ".local/bin/**", "scripts/**", "infra/**"]
+        purpose: installed dev tools, graph output, host scripts
+        index: "no"
+        scan: none
+        toolset: none
+        sensitive: false
+      - name: unclassified-core
+        paths: ["GovCon/**", "Monero/**", "Maintainance/**", "chiaki/**", "phantom-portal/**", "services/**", "docker-data/**", "thinclient_drives/**", "er/**", "a/**"]
+        purpose: TODO  # TODO: ask owner - classify these home-root folders
+        index: "no"
+        scan: none
+        toolset: none
+        sensitive: false
+
+  cyberdeck:
+    default: { purpose: unclassified, index: "no", scan: none, toolset: none, sensitive: false }
+    profiles:
+      - name: credentials-loose
+        paths: ["smtp*.env", "smtp*.conf", "ntfy.conf", "adguard-conf/**", "adguard-work/**", ".alerts/**"]
+        purpose: SMTP/ntfy/DNS config with credentials in home root
+        index: "no"
+        scan: none
+        toolset: none
+        sensitive: true
+      - name: service-configs
+        paths: ["homeassistant/**", "vaultkeeper/**", "anythingllm/**", "tailnet-monitor/**", "trading-system/**"]
+        purpose: self-hosted service data and configs
+        index: "no"
+        scan: none
+        toolset: incident       # health via containers/units, never file contents
+        sensitive: true
+      - name: projects
+        paths: ["Projects/*/"]
+        purpose: code clones (mostly mirrored on core/GitHub)
+        index: "no"
+        scan: nightly           # git metadata only
+        toolset: projects
+        sensitive: false
+      - name: loose-scripts
+        paths: ["*.sh", "*.py", "*.md", "*.txt", "*.log"]
+        purpose: ~50 one-off setup/debug scripts and notes from Apr-Jul
+        index: "no"
+        scan: nightly           # stat only, to support cleanup
+        toolset: files
+        sensitive: false
+      - name: obsidian-vault
+        paths: ["Documents/ObsidianVault/**"]
+        purpose: empty vault (0 notes) with obsidian-git configured
+        index: "no"
+        scan: none
+        toolset: none
+        sensitive: false        # TODO: ask owner - retire this empty vault?
+      - name: build-artifacts
+        paths: ["build/**", "llama.cpp/**", "Apps/**", "apps/**", "opencore/**", "graphify-out/**", "Freenove_Computer_Case_Kit_for_Raspberry_Pi/**"]
+        purpose: builds, vendored apps, hardware kit
+        index: "no"
+        scan: none
+        toolset: none
+        sensitive: false
+      - name: unclassified-cyberdeck
+        paths: ["home-network-defense-grid/**", "brick-14-home-network-defense-grid/**", "phantom/**", "claude-agents/**", "Portfolio-Audit/**", "Backups/**", "backups/**", "windows_backup/**"]
+        purpose: TODO  # TODO: ask owner - keep, archive, or delete?
+        index: "no"
+        scan: none
+        toolset: none
+        sensitive: false
+
+  blacknode:
+    default: { purpose: unclassified, index: "no", scan: none, toolset: none, sensitive: false }
+    profiles:
+      - name: investigations
+        paths: ["Investigations/**"]
+        purpose: PI case data (Advantage Investigations) and investigations stack data
+        index: "no"
+        scan: none
+        toolset: none
+        sensitive: true
+      - name: obsidian-vault
+        paths: ["Documents/Obsidian Vault/**"]
+        exceptions: ["Documents/Obsidian Vault/.obsidian/**"]
+        purpose: primary vault editing host; sync timers disabled since 2026-09-06
+        index: limited          # TODO: ask owner - contents or stats/titles only (same answer as core)
+        scan: nightly           # note count, newest mtime, git dirty/last-push
+        toolset: files
+        sensitive: false
+      - name: vault-backups
+        paths: ["Inbox/vault-backups/**", "Inbox/vault-archive/**", "vaults/**"]
+        purpose: pre-consolidation vault copies (6,801 notes vs 6,230 live) and old vaultkeeper vault
+        index: "no"
+        scan: none
+        toolset: none
+        sensitive: false        # TODO: ask owner - were the 571 extra notes intentionally dropped?
+      - name: downloads
+        paths: ["Downloads/*"]
+        exceptions: ["Downloads/System-Files/**"]
+        purpose: intake backlog (12 files, 10 older than 30 days)
+        index: "no"             # stat only
+        scan: nightly
+        toolset: files
+        sensitive: false
+      - name: projects
+        paths: ["Projects/*/", "Projects/Websites/*/"]
+        exceptions: ["Projects/references/**", "Projects/tools/**", "Projects/ecosystem-ops-private/**"]
+        purpose: code repos (several dirty, incl. a stale phantom-ai clone)
+        index: limited          # git metadata + README only
+        scan: nightly
+        toolset: projects
+        sensitive: false
+      - name: private-ops
+        paths: ["Projects/ecosystem-ops-private/**", "config-backup/**", ".dotfiles/**"]
+        purpose: tunnel configs, private ops, config backups
+        index: "no"
+        scan: none
+        toolset: none
+        sensitive: true
+      - name: security-references
+        paths: ["Documents/wordlists/**", "Projects/references/**", "Projects/tools/**", "Aircrack_GUI/**", "GhostTrack/**", "theHarvester/**", "awesome-flipperzero-withModules/**"]
+        purpose: wordlists and third-party security tool clones
+        index: "no"
+        scan: none
+        toolset: none
+        sensitive: false
+      - name: decommissioned
+        paths: ["aipi-sdcard-backup/**", "Archives/**"]
+        purpose: 64 GB aipi SD backup (host decommissioned) and archives
+        index: "no"
+        scan: nightly           # size/age only
+        toolset: files
+        sensitive: false        # TODO: ask owner - delete or move aipi-sdcard-backup off-host?
+      - name: media-assets
+        paths: ["ThemeAssets/**", "Pictures/**", "Music/**", "Videos/**", "go/**"]
+        purpose: theming assets, media, Go toolchain cache
+        index: "no"
+        scan: none
+        toolset: none
+        sensitive: false
+      - name: unclassified-blacknode
+        paths: ["device-activity-tracker/**", "Apps/**"]
+        purpose: TODO  # TODO: ask owner - device-activity-tracker (22 dirty) and Apps/AnythingLLM integrations
+        index: "no"
+        scan: none
+        toolset: none
+        sensitive: false
