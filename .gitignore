@@ -68,3 +68,6 @@ logs/
 *.local.yaml
 *.local.yml
 tmp/
+
+# Host audit output (contains hostnames/ports)
+audit-*.md
