@@ -20,7 +20,7 @@ Rule: **no agent or toolset gets designed until this audit shows a real job for 
 |---|---|---|
 | core | local (`kageki`) | Run the script directly. GPU, k3s, Ollama, Redis, ChromaDB. |
 | cyberdeck | `jolly@cyberdeck` | Owner confirmed it's authorized. |
-| blacknode | confirm the user first | Arch desktop with the Obsidian vault. Try the username from `tailscale status` / the owner. `roger` is likely, based on the repo's CLAUDE.md paths. If unsure, ask. |
+| blacknode | `roger@blacknode` | Owner confirmed the username. Arch desktop with the Obsidian vault. |
 
 Ignore any other tailnet peers (aipi is out of scope for this pass).
 
@@ -28,7 +28,7 @@ Ignore any other tailnet peers (aipi is out of scope for this pass).
 
 1. Find the repo on core (CLAUDE.md suggests `~/Projects/phantom-ai`, but paths may differ under `kageki`). Then `git fetch origin claude/beautiful-curie-2s84oo && git checkout claude/beautiful-curie-2s84oo && git pull`.
 2. Run `tailscale status` and confirm cyberdeck and blacknode are online.
-3. Test non-interactive access: `ssh -o BatchMode=yes -o ConnectTimeout=5 jolly@cyberdeck true` (same for blacknode). If `ssh` fails, try `tailscale ssh`. If Tailscale SSH asks for a browser check, **stop and ask the owner**. Don't work around it.
+3. Test non-interactive access: `ssh -o BatchMode=yes -o ConnectTimeout=5 jolly@cyberdeck true`, then the same for `roger@blacknode`. If `ssh` fails, try `tailscale ssh`. If Tailscale SSH asks for a browser check, **stop and ask the owner**. Don't work around it.
 4. `mkdir -p audits` in the repo. Anything matching `audit-*.md` is gitignored, so don't change that.
 
 ## Step 1: Run the audit script on each host
@@ -39,7 +39,7 @@ Run `scripts/audit-host.sh` without copying it to the remote host:
 DATE=$(date +%F)
 bash scripts/audit-host.sh "audits/audit-core-$DATE.md"
 
-for target in jolly@cyberdeck <user>@blacknode; do
+for target in jolly@cyberdeck roger@blacknode; do
   h=${target#*@}
   ssh -o BatchMode=yes "$target" "bash -s -- /tmp/phantom-audit.md" < scripts/audit-host.sh \
     && ssh -o BatchMode=yes "$target" "cat /tmp/phantom-audit.md; rm -f /tmp/phantom-audit.md" > "audits/audit-$h-$DATE.md"
