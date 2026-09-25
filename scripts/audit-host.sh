@@ -43,7 +43,8 @@ run() { timeout "${T:-30}" "$@" 2>&1 | redact; }
   section "Tailscale peers (names/OS/online only)"
   if have tailscale; then
     if have jq; then
-      run tailscale status --json | jq -r '.Self as $s | ([$s] + [.Peer[]]) | .[] | "\(.HostName)\t\(.OS)\tonline=\(.Online)"'
+      # jq must see the raw JSON: redact() rewrites key-like values and breaks the quoting
+      timeout "${T:-30}" tailscale status --json 2>/dev/null | jq -r '.Self as $s | ([$s] + [.Peer[]?]) | .[] | "\(.HostName)\t\(.OS)\tonline=\(.Online)"' 2>&1 | redact
     else
       run tailscale status | awk '{print $2, $3, $4, $5}'
     fi
